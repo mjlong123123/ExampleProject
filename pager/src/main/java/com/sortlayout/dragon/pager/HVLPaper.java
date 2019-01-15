@@ -39,7 +39,7 @@ public class HVLPaper extends ViewGroup {
 
     private Rect selfRect = new Rect();
 
-    private Runnable startUpdateRunnable = new StartUpdateRunnable();
+    private Updater updater = new Updater();
 
     public HVLPaper(Context context) {
         super(context);
@@ -273,14 +273,14 @@ public class HVLPaper extends ViewGroup {
         int childCount = getChildCount();
         //clear old view;
         if (adapter != null) {
-            adapter.startUpdate(this);
+            updater.start();
             for (int i = 0; i < childCount; i++) {
                 childView = (ViewGroup) getChildAt(i);
                 layoutParams = (LayoutParams) childView.getLayoutParams();
                 changeStatus(childView, layoutParams, LayoutParams.STATUS.INITIAL);
                 childView.removeAllViews();
             }
-            adapter.finishUpdate(this);
+            updater.end();
         }
         if (adp == null) {
             return;
@@ -290,7 +290,7 @@ public class HVLPaper extends ViewGroup {
         }
         adapter = adp;
         int startPosition = selectedPosition - 1;
-        adapter.startUpdate(this);
+        updater.start();
         for (int i = 0; i < childCount; i++) {
             childView = (ViewGroup) getChildAt(i);
             layoutParams = (LayoutParams) childView.getLayoutParams();
@@ -301,7 +301,7 @@ public class HVLPaper extends ViewGroup {
                 changeStatus(childView, layoutParams, LayoutParams.STATUS.CREATED);
             }
         }
-        adapter.finishUpdate(this);
+        updater.end();
     }
 
     private int checkPosition(int position) {
@@ -326,9 +326,9 @@ public class HVLPaper extends ViewGroup {
             View childView = getChildAt(childCount - 1);
             LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
             removeViewAt(childCount - 1);
-            adapter.startUpdate(this);
+            updater.start();
             changeStatus(childView, childLayoutParams, LayoutParams.STATUS.INITIAL);
-            adapter.finishUpdate(this);
+            updater.end();
             childLayoutParams.offset(horizontal ? -childCount * getMeasuredWidth() : 0, horizontal ? 0 : -childCount * getMeasuredHeight());
             childLayoutParams.backPosition(3, adapter.getCount());
             addView(childView, 0, childLayoutParams);
@@ -336,9 +336,9 @@ public class HVLPaper extends ViewGroup {
             View childView = getChildAt(0);
             LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
             removeViewAt(0);
-            adapter.startUpdate(this);
+            updater.start();
             changeStatus(childView, childLayoutParams, LayoutParams.STATUS.INITIAL);
-            adapter.finishUpdate(this);
+            updater.end();
             childLayoutParams.offset(horizontal ? childCount * getMeasuredWidth() : 0, horizontal ? 0 : childCount * getMeasuredHeight());
             childLayoutParams.forwardPosition(3, adapter.getCount());
             addView(childView, -1, childLayoutParams);
@@ -470,7 +470,8 @@ public class HVLPaper extends ViewGroup {
         View childView;
         LayoutParams layoutParams;
         Rect rect = new Rect();
-        adapter.startUpdate(this);
+
+        updater.start();
         for (int i = 0; i < count; i++) {
             childView = getChildAt(i);
             layoutParams = (LayoutParams) childView.getLayoutParams();
@@ -483,7 +484,7 @@ public class HVLPaper extends ViewGroup {
                 changeStatus(childView, layoutParams, LayoutParams.STATUS.CREATED);
             }
         }
-        adapter.finishUpdate(this);
+        updater.end();
     }
 
     private void changeStatus(View childView, LayoutParams layoutParams, LayoutParams.STATUS status) {
@@ -494,14 +495,17 @@ public class HVLPaper extends ViewGroup {
             switch (layoutParams.status) {
                 case INITIAL:
                     if (status.ordinal() > LayoutParams.STATUS.INITIAL.ordinal()) {
+                        updater.run();
                         adapter.onCreate((ViewGroup) childView, layoutParams.position);
                     }
                 case CREATED:
                     if (status.ordinal() > LayoutParams.STATUS.CREATED.ordinal()) {
+                        updater.run();
                         adapter.onShow((ViewGroup) childView, layoutParams.position);
                     }
                 case SHOWN:
                     if (status.ordinal() > LayoutParams.STATUS.SHOWN.ordinal()) {
+                        updater.run();
                         adapter.onActive((ViewGroup) childView, layoutParams.position);
                     }
                 case ACTIVE:
@@ -512,14 +516,17 @@ public class HVLPaper extends ViewGroup {
             switch (layoutParams.status) {
                 case ACTIVE:
                     if (status.ordinal() < LayoutParams.STATUS.ACTIVE.ordinal()) {
+                        updater.run();
                         adapter.onInactive((ViewGroup) childView, layoutParams.position);
                     }
                 case SHOWN:
                     if (status.ordinal() < LayoutParams.STATUS.SHOWN.ordinal()) {
+                        updater.run();
                         adapter.onHide((ViewGroup) childView, layoutParams.position);
                     }
                 case CREATED:
                     if (status.ordinal() < LayoutParams.STATUS.CREATED.ordinal()) {
+                        updater.run();
                         adapter.onDestroy((ViewGroup) childView, layoutParams.position);
                     }
                 case INITIAL:
@@ -645,11 +652,33 @@ public class HVLPaper extends ViewGroup {
         int getCount();
     }
 
-    private class StartUpdateRunnable implements Runnable{
-        boolean oneShotFlag = false;
+    private class Updater implements Runnable {
+        private boolean oneShotFlag = false;
+        private boolean needFinishUpdate = false;
+
+        public void start() {
+            oneShotFlag = false;
+            needFinishUpdate = false;
+        }
+
+        public void end() {
+            if (needFinishUpdate) {
+                if (adapter != null) {
+                    adapter.finishUpdate(HVLPaper.this);
+                }
+            }
+        }
+
         @Override
         public void run() {
-
+            if (oneShotFlag) {
+                return;
+            }
+            oneShotFlag = true;
+            if (adapter != null) {
+                adapter.startUpdate(HVLPaper.this);
+                needFinishUpdate = true;
+            }
         }
     }
 }
