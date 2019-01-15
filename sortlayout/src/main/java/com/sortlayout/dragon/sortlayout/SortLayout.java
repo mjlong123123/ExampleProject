@@ -14,12 +14,14 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,7 @@ import static com.sortlayout.dragon.sortlayout.SortLayout.TouchMode.NORMAL;
 /**
  * @author dragon
  */
-public class SortLayout extends ViewGroup {
+public class SortLayout extends RelativeLayout {
 
     private static final String TAG = "SortLayout";
 
@@ -74,6 +76,11 @@ public class SortLayout extends ViewGroup {
 
     private int endAnimationDuration = 500;
 
+
+    private SparseArray<Rect> positions = new SparseArray<>(8);
+
+    private boolean reuseLayout = false;
+
     public SortLayout(Context context) {
         super(context);
         init();
@@ -95,17 +102,17 @@ public class SortLayout extends ViewGroup {
         setWillNotDraw(false);
     }
 
-    public void addHolder(Holder holder) {
+    public void addHolder(Holder holder, int index) {
         if (holder == null) {
-            Log.d(TAG, "addHolder holder == null "); 
+            Log.d(TAG, "addHolder holder == null ");
             return;
         }
         View view = holder.createView(this);
         if (holder.data == null) {
             throw new RuntimeException("addHolder holder data is null error!!!!");
         }
-        holder.bindView(this, view, getChildCount(), holder.data);
-        addView(view);
+        holder.bindView(this, getChildAt(index), getChildCount(), holder.data);
+//        addView(view);
     }
 
     public void notifyHolderChange(Holder holder) {
@@ -255,78 +262,84 @@ public class SortLayout extends ViewGroup {
         super.draw(canvas);
         drawDragBitmap(canvas);
     }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int childCount = getChildCount();
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int statLeft = Build.VERSION.SDK_INT < 17 ? getPaddingLeft() : getPaddingStart();
-        int starTop = getPaddingTop();
-        if (childCount > 0) {
-            View childView = getChildAt(0);
-            LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
-            int childWidth = width - getPaddingLeft() - getPaddingRight();
-            childView.measure(MeasureSpec.makeMeasureSpec(childWidth, EXACTLY), MeasureSpec.makeMeasureSpec(childWidth, EXACTLY));
-            layoutParameter.left = statLeft;
-            layoutParameter.top = starTop;
-            layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
-            layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
-            starTop = layoutParameter.bottom;
-        }
-        starTop += divideSpace;
-        int secondLineChildWidth = width - getPaddingLeft() - getPaddingRight() - secondLineLeftSpace - secondLineRightSpace - (secondLineDivideSpace * 3);
-        secondLineChildWidth /= 4;
-
-        bitmapRect.set(0, 0, secondLineChildWidth, secondLineChildWidth);
-
-        statLeft = Build.VERSION.SDK_INT >= 17 ? getPaddingStart() : getPaddingLeft();
-        statLeft += secondLineLeftSpace;
-
-        if (Build.VERSION.SDK_INT >= 17 && getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
-            for (int i = childCount - 1; i > 0; i--) {
-                View childView = getChildAt(i);
-                LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
-                childView.measure(MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY), MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY));
-                layoutParameter.left = statLeft;
-                layoutParameter.top = starTop;
-                layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
-                layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
-                statLeft = layoutParameter.right;
-                statLeft += secondLineDivideSpace;
-            }
-        } else {
-            for (int i = 1; i < childCount; i++) {
-                View childView = getChildAt(i);
-                LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
-                childView.measure(MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY), MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY));
-                layoutParameter.left = statLeft;
-                layoutParameter.top = starTop;
-                layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
-                layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
-                statLeft = layoutParameter.right;
-                statLeft += secondLineDivideSpace;
-            }
-        }
-
-        setMeasuredDimension(width, height);
-    }
+//
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//        int childCount = getChildCount();
+//        int width = MeasureSpec.getSize(widthMeasureSpec);
+//        int height = MeasureSpec.getSize(heightMeasureSpec);
+//        int statLeft = Build.VERSION.SDK_INT < 17 ? getPaddingLeft() : getPaddingStart();
+//        int starTop = getPaddingTop();
+//        if (childCount > 0) {
+//            View childView = getChildAt(0);
+//            LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
+//            int childWidth = width - getPaddingLeft() - getPaddingRight();
+//            childView.measure(MeasureSpec.makeMeasureSpec(childWidth, EXACTLY), MeasureSpec.makeMeasureSpec(childWidth, EXACTLY));
+//            layoutParameter.left = statLeft;
+//            layoutParameter.top = starTop;
+//            layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
+//            layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
+//            starTop = layoutParameter.bottom;
+//        }
+//        starTop += divideSpace;
+//        int secondLineChildWidth = width - getPaddingLeft() - getPaddingRight() - secondLineLeftSpace - secondLineRightSpace - (secondLineDivideSpace * 3);
+//        secondLineChildWidth /= 4;
+//
+//        bitmapRect.set(0, 0, secondLineChildWidth, secondLineChildWidth);
+//
+//        statLeft = Build.VERSION.SDK_INT >= 17 ? getPaddingStart() : getPaddingLeft();
+//        statLeft += secondLineLeftSpace;
+//
+//        if (Build.VERSION.SDK_INT >= 17 && getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
+//            for (int i = childCount - 1; i > 0; i--) {
+//                View childView = getChildAt(i);
+//                LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
+//                childView.measure(MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY), MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY));
+//                layoutParameter.left = statLeft;
+//                layoutParameter.top = starTop;
+//                layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
+//                layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
+//                statLeft = layoutParameter.right;
+//                statLeft += secondLineDivideSpace;
+//            }
+//        } else {
+//            for (int i = 1; i < childCount; i++) {
+//                View childView = getChildAt(i);
+//                LayoutParameter layoutParameter = (LayoutParameter) childView.getLayoutParams();
+//                childView.measure(MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY), MeasureSpec.makeMeasureSpec(secondLineChildWidth, EXACTLY));
+//                layoutParameter.left = statLeft;
+//                layoutParameter.top = starTop;
+//                layoutParameter.right = layoutParameter.left + childView.getMeasuredWidth();
+//                layoutParameter.bottom = layoutParameter.top + childView.getMeasuredHeight();
+//                statLeft = layoutParameter.right;
+//                statLeft += secondLineDivideSpace;
+//            }
+//        }
+//
+//        setMeasuredDimension(width, height);
+//    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int childCount = getChildCount();
         View childView;
-        LayoutParameter layoutParameter;
-        for (int i = 0; i < childCount; i++) {
-            childView = getChildAt(i);
-            layoutParameter = (LayoutParameter) childView.getLayoutParams();
-            childView.layout(layoutParameter.left, layoutParameter.top, layoutParameter.right, layoutParameter.bottom);
+        if (reuseLayout && childCount == positions.size()) {
+            Log.e("dragon_layout", "layout reuse");
+            Rect rect;
+            for (int i = 0; i < childCount; i++) {
+                childView = getChildAt(i);
+                rect = positions.get(i);
+                childView.layout(rect.left, rect.top, rect.right, rect.bottom);
+            }
+        } else {
+            Log.e("dragon_layout", "layout again");
+            super.onLayout(changed, l, t, r, b);
+            positions.clear();
+            for (int i = 0; i < childCount; i++) {
+                childView = getChildAt(i);
+                positions.put(i, new Rect(childView.getLeft(), childView.getTop(), childView.getRight(), childView.getBottom()));
+            }
         }
-    }
-
-    @Override
-    public void addView(View child, LayoutParams params) {
-        super.addView(child, params);
     }
 
     @Override
@@ -339,27 +352,19 @@ public class SortLayout extends ViewGroup {
         return new LayoutParameter(getContext(), attrs);
     }
 
-    public static class LayoutParameter extends MarginLayoutParams {
+    public static class LayoutParameter extends RelativeLayout.LayoutParams {
 
         public int left;
         public int right;
         public int top;
         public int bottom;
 
+        public LayoutParameter(int w, int h) {
+            super(w, h);
+        }
+
         public LayoutParameter(Context c, AttributeSet attrs) {
             super(c, attrs);
-        }
-
-        public LayoutParameter(int width, int height) {
-            super(width, height);
-        }
-
-        public LayoutParameter(MarginLayoutParams source) {
-            super(source);
-        }
-
-        public LayoutParameter(LayoutParams source) {
-            super(source);
         }
     }
 
@@ -386,6 +391,7 @@ public class SortLayout extends ViewGroup {
     }
 
     private void buildDragBitmap(float x, float y) {
+        reuseLayout = true;
         dragBitmap = null;
         if (dragView == null) {
             Log.d(TAG, "buildDragBitmap dragView == null!!!");
@@ -403,8 +409,10 @@ public class SortLayout extends ViewGroup {
         if (bitmap != null) {
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
+            Log.d(TAG, "buildDragBitmap width "+width);
+            Log.d(TAG, "buildDragBitmap height "+height);
             Matrix matrix = new Matrix();
-            matrix.setScale(bitmapRect.width() * 1.0f / width, bitmapRect.height() * 1.0f / height);
+//            matrix.setScale(bitmapRect.width() * 1.0f / width, bitmapRect.height() * 1.0f / height);
             dragBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
             offsetX = (width - dragBitmap.getWidth()) / 2;
             offsetY = (height - dragBitmap.getHeight()) / 2;

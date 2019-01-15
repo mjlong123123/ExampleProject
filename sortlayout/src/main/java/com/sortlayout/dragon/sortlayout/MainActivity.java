@@ -2,6 +2,7 @@ package com.sortlayout.dragon.sortlayout;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -10,7 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
     private SortLayout sortLayout;
     @Override
@@ -19,19 +20,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sortLayout = findViewById(R.id.sortLayout);
-        sortLayout.addHolder(new MyHolder(this,new Data()));
-        sortLayout.addHolder(new MyHolder(this,new Data()));
-        sortLayout.addHolder(new MyHolder(this,new Data()));
-        sortLayout.setVisibility(View.GONE);
-    }
-
-    public void onClickSwitch(View view){
-        SortLayout2 sortLayout2 = (SortLayout2)view;
-        sortLayout2.switchOrder();
+        sortLayout.addHolder(new MyHolder(this,new Data("11")), 0);
+        sortLayout.addHolder(new MyHolder(this,new Data("2222")), 1);
+        sortLayout.addHolder(new MyHolder(this,new Data("333")), 2);
     }
 
     private static class Data{
-
+        public String title;
+        public Data(String title){
+            this.title = title;
+        }
     }
 
     private class MyHolder extends SortLayout.Holder<Data> implements View.OnClickListener {
@@ -57,9 +55,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void bindView(View parent, View view, int position, Data data) {
             super.bindView(parent, view, position, data);
-            textView.setText("test title "+position);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
-            textView.setTextColor(Color.BLUE);
+            TextView textView= (TextView) view;
+            textView.setText(data.title);
+            textView.setOnClickListener(this);
+//            textView.setText(data.title);
+//            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+//            textView.setTextColor(Color.BLUE);
         }
 
         @Override
