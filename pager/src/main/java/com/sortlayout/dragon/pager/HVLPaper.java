@@ -1,10 +1,10 @@
 package com.sortlayout.dragon.pager;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -43,15 +43,31 @@ public class HVLPaper extends ViewGroup {
 
     public HVLPaper(Context context) {
         super(context);
-        init(context);
+        init(context, null);
     }
 
     public HVLPaper(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init(context, attrs);
     }
 
-    private void init(Context context) {
+    private void init(Context context, AttributeSet attrs) {
+        if (attrs != null) {
+            TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.HVLPaper);
+            int indexCount = typedArray.getIndexCount();
+            for (int i = 0; i < indexCount; i++) {
+                int attr = typedArray.getIndex(i);
+                switch (attr) {
+                    case R.styleable.HVLPaper_loop:
+                        supportLoop = typedArray.getBoolean(attr, true);
+                        break;
+                    case R.styleable.HVLPaper_orientation:
+                        horizontal = typedArray.getInt(attr, 1) == 1 ? true : false;
+                        break;
+                }
+            }
+            typedArray.recycle();
+        }
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
         final float density = context.getResources().getDisplayMetrics().density;
         mMinimumVelocity = (int) (MIN_FLING_VELOCITY * density);
@@ -121,8 +137,6 @@ public class HVLPaper extends ViewGroup {
             for (int i = 0; i < childCount; i++) {
                 childView = getChildAt(i);
                 layoutParams = (LayoutParams) childView.getLayoutParams();
-
-                Log.e("dragon_sort", "sortChildViewAgain index " + layoutParams);
                 childView.layout(layoutParams.left, layoutParams.top, layoutParams.right, layoutParams.bottom);
             }
         }
@@ -132,7 +146,6 @@ public class HVLPaper extends ViewGroup {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         selfRect.set(0, 0, w, h);
-        Log.e("dragon_change", "onSizeChanged ");
         isFirstLayout = true;
         scrollTo(0, 0);
     }
@@ -317,7 +330,6 @@ public class HVLPaper extends ViewGroup {
 
     private void sortChildViewAgain(View selectedView) {
         int index = indexOfChild(selectedView);
-        Log.e("dragon_sort", "sortChildViewAgain index " + index);
         int childCount = getChildCount();
         if (index < 0 || index >= childCount) {
             return;

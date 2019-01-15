@@ -3,7 +3,6 @@ package com.sortlayout.dragon.pager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.view.ViewGroup;
 
 public class PagerActivity extends FragmentActivity {
 
@@ -17,9 +16,6 @@ public class PagerActivity extends FragmentActivity {
     }
 
     public void onClickRequestLayout(View view){
-//        ViewGroup.LayoutParams layoutParams = HVLPaper.getLayoutParams();
-//        layoutParams.width = 1000;
-//        HVLPaper.setLayoutParams(layoutParams);
         HVLPaper.setAdapter(new FragmentAdapter(getSupportFragmentManager()),5);
     }
 }

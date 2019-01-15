@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="HVLPaper">
+        <attr name="orientation" format="enum">
+            <enum name="vertical" value="0" />
+            <enum name="horizontal" value="1" />
+        </attr>
+        <attr name="loop" format="boolean" />
+    </declare-styleable>
+
+    <item name="HVLContainerFirst" type="id" />
+    <item name="HVLContainerSecond" type="id" />
+    <item name="HVLContainerThird" type="id" />
+</resources>
