@@ -2,6 +2,9 @@ package com.sortlayout.dragon.sortlayout;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Xfermode;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Xfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
         sortLayout = findViewById(R.id.sortLayout);
         sortLayout.addHolder(new MyHolder(this,new Data("11")), 0);
         sortLayout.addHolder(new MyHolder(this,new Data("2222")), 1);

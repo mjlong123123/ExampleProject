@@ -1,1 +1,1 @@
-include ':app', ':sortlayout', ':pager'
+include ':app', ':sortlayout', ':pager', ':drawables'
