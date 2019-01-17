@@ -19,7 +19,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layerType="software"
-        android:paddingLeft="6dp"
-        android:paddingRight="6dp"/>
+        android:padding="12dp"/>
 
 </android.support.constraint.ConstraintLayout>
