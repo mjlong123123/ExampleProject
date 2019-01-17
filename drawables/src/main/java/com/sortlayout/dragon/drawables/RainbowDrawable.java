@@ -1,6 +1,5 @@
 package com.sortlayout.dragon.drawables;
 
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -16,13 +15,6 @@ import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.AttributeSet;
-import android.util.Log;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 
 import static android.graphics.Canvas.ALL_SAVE_FLAG;
 
@@ -31,146 +23,115 @@ import static android.graphics.Canvas.ALL_SAVE_FLAG;
  */
 public class RainbowDrawable extends Drawable implements Runnable {
 
-    Paint paint;
-    Paint paintGradient;
-    Path pathL;
-    Path pathS;
-    Path pathS1;
+	private Paint paint = new Paint();
+	private Paint paintMask = new Paint();
+	private Paint paintGradient = new Paint();
+	private Path rainbowPath = new Path();
+	private Path bgPath = new Path();
+	private RectF drawableRect = new RectF();
+	private int degree = 0;
 
-    RectF rectL = new RectF();
-    RectF rectS = new RectF();
-    RectF rectS1 = new RectF();
+	private final int timeStep = 33;
+	private int degreeStep = 1;
+	private boolean requestPlay = true;
 
-    RectF saveLayerRect = new RectF();
+	/**
+	 * user can change.
+	 */
+	private int radius = 60;
+	private int strokeWidth = 20;
+	private int durationOnCircle = 2000;
 
-    Paint paintMask = new Paint();
-    int degree = 0;
+	public RainbowDrawable() {
+		init();
+	}
 
-    SweepGradient sweepGradient;
+	public RainbowDrawable(int durationOnCircle, int strokeWidth, int radius) {
+		this.durationOnCircle = durationOnCircle;
+		this.strokeWidth = strokeWidth;
+		this.radius = radius;
+		init();
+	}
 
-    int radius = 60;
-    int strokeWidth = 6;
+	private void init() {
+		paintGradient.setStyle(Paint.Style.FILL_AND_STROKE);
+		paintMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(strokeWidth);
+		paint.setAntiAlias(true);
+	}
 
-    int durationOnCircle = 1000;
+	@Override
+	public boolean setVisible(boolean visible, boolean restart) {
+		boolean changed = super.setVisible(visible, restart);
+		if (changed) {
+			if (visible) {
+				scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
+			} else {
+				unscheduleSelf(this);
+			}
+		}
+		return changed;
+	}
 
-    int timeStep = 33;
+	@Override
+	public void draw(@NonNull Canvas canvas) {
+		Rect rect = getBounds();
+		paint.setColor(Color.parseColor("#90000000"));
+		paint.setStyle(Paint.Style.FILL);
+		canvas.drawPath(bgPath, paint);
+		canvas.saveLayer(drawableRect, paint, ALL_SAVE_FLAG);
+		canvas.rotate(degree, rect.width() / 2, rect.height() / 2);
+		canvas.drawCircle(rect.width() / 2, rect.height() / 2, rect.width(), paintGradient);
+		canvas.rotate(-degree, rect.width() / 2, rect.height() / 2);
+		canvas.saveLayer(drawableRect, paintMask, ALL_SAVE_FLAG);
+		paint.setStyle(Paint.Style.STROKE);
+		canvas.drawPath(rainbowPath, paint);
+		canvas.restore();
+		canvas.restore();
+		if (requestPlay) {
+			requestPlay = false;
+			scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
+		}
+	}
 
-    int degreeStep = 1;
+	@Override
+	protected void onBoundsChange(Rect bounds) {
+		int w = bounds.width();
+		int h = bounds.height();
+		int offset = strokeWidth / 2;
+		degreeStep = (int) (timeStep / (durationOnCircle / 360.0));
+		drawableRect.set(0, 0, w, h);
+		RectF rectF = new RectF(drawableRect.left + offset, drawableRect.top + offset, drawableRect.right - offset, drawableRect.bottom - offset);
+		rainbowPath.reset();
+		rainbowPath.addRoundRect(rectF, radius, radius, Path.Direction.CCW);
+		bgPath.reset();
+		RectF rectF2 = new RectF(drawableRect.left + strokeWidth, drawableRect.top + strokeWidth, drawableRect.right - strokeWidth, drawableRect.bottom - strokeWidth);
+		bgPath.addRoundRect(rectF2, radius - offset, radius - offset, Path.Direction.CCW);
+		paintGradient.setShader(new SweepGradient(w / 2, h / 2, new int[]{Color.BLUE, Color.RED, Color.GREEN, Color.RED, Color.BLUE}, null));
+	}
 
-    boolean requestPlay = true;
+	@Override
+	public void setAlpha(int alpha) {
+		//Do nothing
+	}
 
-    public RainbowDrawable() {
-        init();
-    }
+	@Override
+	public void setColorFilter(@Nullable ColorFilter colorFilter) {
+		//Do nothing
+	}
 
-    private void init() {
-        degreeStep = (int) (timeStep / (durationOnCircle / 360.0));
-        paintGradient = new Paint();
-        paintGradient.setAntiAlias(true);
-        paintGradient.setStyle(Paint.Style.FILL_AND_STROKE);
-        paintGradient.setColor(Color.RED);
-        paintGradient.setStrokeWidth(strokeWidth);
-        paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.GREEN);
-        paint.setStrokeWidth(strokeWidth);
-        paint.setAntiAlias(true);
-        pathL = new Path();
-        pathS = new Path();
-        pathS1 = new Path();
-        paintMask.setStyle(Paint.Style.STROKE);
-        paintMask.setColor(Color.GREEN);
-        paintMask.setStrokeWidth(strokeWidth);
-        paintMask.setAntiAlias(true);
-        paintMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-    }
+	@Override
+	public int getOpacity() {
+		return PixelFormat.TRANSPARENT;
+	}
 
-    public void setDegree(int degree) {
-        this.degree = degree;
-        invalidateSelf();
-    }
 
-    @Override
-    public void inflate(@NonNull Resources r, @NonNull XmlPullParser parser, @NonNull AttributeSet attrs) throws IOException, XmlPullParserException {
-        super.inflate(r, parser, attrs);
-    }
-
-    @Override
-    public void inflate(@NonNull Resources r, @NonNull XmlPullParser parser, @NonNull AttributeSet attrs, @Nullable Resources.Theme theme) throws IOException, XmlPullParserException {
-        super.inflate(r, parser, attrs, theme);
-    }
-
-    @Override
-    public boolean setVisible(boolean visible, boolean restart) {
-        boolean changed = super.setVisible(visible, restart);
-        if (changed) {
-            if (visible) {
-                scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
-            } else {
-                unscheduleSelf(this);
-            }
-        }
-        return changed;
-    }
-
-    @Override
-    public void draw(@NonNull Canvas canvas) {
-        Rect rect = getBounds();
-        paint.setColor(Color.GREEN);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawRoundRect(saveLayerRect, radius, radius, paint);
-        canvas.saveLayer(saveLayerRect, paint, ALL_SAVE_FLAG);
-        canvas.rotate(degree, rect.width() / 2, rect.height() / 2);
-        canvas.drawCircle(rect.width() / 2, rect.height() / 2, rect.width(), paintGradient);
-        canvas.rotate(-degree, rect.width() / 2, rect.height() / 2);
-        canvas.saveLayer(saveLayerRect, paintMask, ALL_SAVE_FLAG);
-        paint.setStyle(Paint.Style.STROKE);
-        canvas.drawPath(pathS, paint);
-        canvas.restore();
-        canvas.restore();
-        if (requestPlay) {
-            requestPlay = false;
-            scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
-        }
-    }
-
-    @Override
-    public void setAlpha(int alpha) {
-        //Do nothind
-    }
-
-    @Override
-    public void setColorFilter(@Nullable ColorFilter colorFilter) {
-        //Do nothing
-    }
-
-    @Override
-    public int getOpacity() {
-        return PixelFormat.TRANSPARENT;
-    }
-
-    @Override
-    protected void onBoundsChange(Rect bounds) {
-        int w = bounds.width();
-        int h = bounds.height();
-        rectL.set(0, 0, w, h);
-        rectS1.set(strokeWidth, strokeWidth, w - (strokeWidth), h - (strokeWidth));
-        rectS.set(strokeWidth / 2, strokeWidth / 2, w - (strokeWidth / 2), h - (strokeWidth / 2));
-        pathL.addRoundRect(rectL, radius, radius, Path.Direction.CCW);
-        pathS.addRoundRect(rectS, radius, radius, Path.Direction.CCW);
-        sweepGradient = new SweepGradient(w / 2, h / 2, new int[]{Color.BLUE, Color.RED, Color.GREEN, Color.RED, Color.BLUE}, null);
-        paintGradient.setShader(sweepGradient);
-        saveLayerRect.set(0, 0, w, h);
-    }
-
-    @Override
-    public void run() {
-        Log.e("dragon_run", "run timeStep " + timeStep);
-        Log.e("dragon_run", "run degreeStep " + degreeStep);
-        Log.e("dragon_run", "run degree " + degree);
-        scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
-        degree += degreeStep;
-        degree %= 360;
-        invalidateSelf();
-    }
+	@Override
+	public void run() {
+		degree += degreeStep;
+		degree %= 360;
+		invalidateSelf();
+		scheduleSelf(this, SystemClock.uptimeMillis() + timeStep);
+	}
 }
