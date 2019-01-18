@@ -25,7 +25,9 @@ import static android.graphics.Canvas.ALL_SAVE_FLAG;
  */
 public class RainbowDrawable extends Drawable implements Runnable {
 
-	private Paint paint = new Paint();
+	private Paint bgPaint = new Paint();
+	private Paint rainbowPaint = new Paint();
+	private Paint paintLayer = new Paint();
 	private Paint paintMask = new Paint();
 	private Paint paintGradient = new Paint();
 	private Path rainbowPath = new Path();
@@ -55,11 +57,16 @@ public class RainbowDrawable extends Drawable implements Runnable {
 	}
 
 	private void init() {
+		paintGradient.setColor(Color.WHITE);
 		paintGradient.setStyle(Paint.Style.FILL_AND_STROKE);
+		paintMask.setColor(Color.WHITE);
 		paintMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(strokeWidth);
-		paint.setAntiAlias(true);
+		bgPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+		bgPaint.setAntiAlias(true);
+		paintLayer.setColor(Color.WHITE);
+		rainbowPaint.setColor(Color.WHITE);
+		rainbowPaint.setStyle(Paint.Style.STROKE);
+		rainbowPaint.setAntiAlias(true);
 	}
 
 	@Override
@@ -79,19 +86,18 @@ public class RainbowDrawable extends Drawable implements Runnable {
 	public void draw(@NonNull Canvas canvas) {
 		Rect rect = getBounds();
 		if (bgColor != 0) {
-			paint.setColor(bgColor);
-			paint.setStyle(Paint.Style.FILL_AND_STROKE);
-			paint.setStrokeWidth(strokeWidth);
-			canvas.drawPath(bgPath, paint);
-			canvas.saveLayer(drawableRect, paint, ALL_SAVE_FLAG);
+			bgPaint.setColor(bgColor);
+			bgPaint.setStrokeWidth(strokeWidth);
+			canvas.drawPath(bgPath, bgPaint);
+			canvas.saveLayer(drawableRect, paintLayer, ALL_SAVE_FLAG);
 		}
 		canvas.rotate(degree, rect.width() / 2, rect.height() / 2);
 		canvas.drawCircle(rect.width() / 2, rect.height() / 2, rect.width(), paintGradient);
 		canvas.rotate(-degree, rect.width() / 2, rect.height() / 2);
 		{
+			rainbowPaint.setStrokeWidth(strokeWidth);
 			canvas.saveLayer(drawableRect, paintMask, ALL_SAVE_FLAG);
-			paint.setStyle(Paint.Style.STROKE);
-			canvas.drawPath(rainbowPath, paint);
+			canvas.drawPath(rainbowPath, rainbowPaint);
 			canvas.restore();
 		}
 		if (bgColor != 0) {
@@ -195,7 +201,7 @@ public class RainbowDrawable extends Drawable implements Runnable {
 			return this;
 		}
 
-		public RainbowDrawable Build() {
+		public RainbowDrawable build() {
 			RainbowDrawable rainbowDrawable = new RainbowDrawable();
 			rainbowDrawable.strokeWidth = strokeWidth;
 			rainbowDrawable.radius = radius;

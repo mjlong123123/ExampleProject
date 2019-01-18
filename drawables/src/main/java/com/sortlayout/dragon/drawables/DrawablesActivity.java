@@ -15,10 +15,11 @@ public class DrawablesActivity extends FragmentActivity {
         setContentView(R.layout.activity_drawables);
         TextView textView = (TextView) findViewById(R.id.msgText);
         RainbowDrawable.Builder builder = new RainbowDrawable.Builder();
-        builder.setRadius((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,10,getResources().getDisplayMetrics()));
-        builder.setStrokeWidth((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,10,getResources().getDisplayMetrics()));
-        builder.setDuration(1000);
-        builder.setBackgroundColor(Color.parseColor("#f0000000"));
-        textView.setBackgroundDrawable(builder.Build());
+        builder.setRadius((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,20,getResources().getDisplayMetrics()));
+        builder.setStrokeWidth((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,5,getResources().getDisplayMetrics()));
+        builder.setDuration(2000);
+        builder.setBackgroundColor(Color.parseColor("#60000000"));
+        builder.setGradientColorAndPosition(new int[]{Color.BLUE,Color.RED,Color.YELLOW},new float[]{0.0f,0.1f,1.f});
+        textView.setBackgroundDrawable(builder.build());
     }
 }
