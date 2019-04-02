@@ -1,6 +1,9 @@
 package com.example.dragon.exampleproject;
 
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -41,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             public void onBindViewHolder(@NonNull CustomHolder viewHolder, int i) {
                 final MenuData.MenuItemData itemData = menus.get(i);
                 viewHolder.textView.setText(itemData.title);
-                viewHolder.textView.setOnClickListener(new View.OnClickListener() {
+                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(MainActivity.this,itemData.aClass);
@@ -56,6 +59,41 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public int getItemCount() {
                 return menus.size();
+            }
+        });
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            Paint paint = new Paint();
+            int divide = 2;
+            @Override
+            public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                View child;
+                RecyclerView.LayoutParams layoutParams;
+                int count = parent.getChildCount();
+                int lastItemPosition = parent.getAdapter().getItemCount()-1;
+                paint.setStrokeWidth(divide);
+                paint.setStyle(Paint.Style.STROKE);
+                for(int i = 0; i < count; i++){
+                    child = parent.getChildAt(i);
+                    int bottom = child.getBottom();
+                    layoutParams = (RecyclerView.LayoutParams)child.getLayoutParams();
+                    if(layoutParams.getViewAdapterPosition() < lastItemPosition){
+                        c.drawLine(0,bottom + (divide/2.f),parent.getWidth(),bottom + (divide/2.0f),paint);
+                    }
+                }
+            }
+
+            @Override
+            public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                super.onDrawOver(c, parent, state);
+            }
+
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                int lastItemPosition = parent.getAdapter().getItemCount()-1;
+                RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams)view.getLayoutParams();
+                if(layoutParams.getViewAdapterPosition() < lastItemPosition) {
+                    outRect.set(0, 0, 0, divide);
+                }
             }
         });
     }
