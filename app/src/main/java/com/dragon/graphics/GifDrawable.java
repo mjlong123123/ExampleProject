@@ -13,19 +13,21 @@ import android.util.Log;
 
 import java.io.InputStream;
 
+
 /**
  * @author chenjiulong
  */
 public class GifDrawable extends Drawable implements Runnable {
 
 	private Movie movie;
-	private boolean loop = false;
+	private boolean loop = true;
 	private int duration = 0;
-	private static final int STEP_DURATION = 2;//millisecond
+	private static final int STEP_DURATION = 30;//millisecond
 	private boolean started = false;
 	private long startTime = 0;
 
-	public GifDrawable(Context context) {
+	public GifDrawable(Context context, boolean loop) {
+		this.loop = loop;
 		InputStream is = null;
 		try {
 			is = context.getAssets().open("test.gif");
@@ -79,8 +81,8 @@ public class GifDrawable extends Drawable implements Runnable {
 		movie.setTime(playTime);
 		movie.draw(canvas, 0, 0);
 		if (started) {
-//			scheduleSelf(this, currentTime + STEP_DURATION);
-			invalidateSelf();
+			scheduleSelf(this, currentTime + STEP_DURATION);
+//			invalidateSelf();
 		}
 	}
 

@@ -6,12 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.dragon.graphics.GifDrawable;
 import com.dragon.graphics.RainbowDrawable;
 import com.example.dragon.exampleproject.R;
-
-import java.io.File;
 
 public class DrawablesActivity extends AppCompatActivity {
 
@@ -42,10 +39,10 @@ public class DrawablesActivity extends AppCompatActivity {
 		gifView.setImageDrawable(gifDrawable);
 		ImageView gifView1 = findViewById(R.id.gifView1);
 
-		File file = new File("mnt/sdcard/test.gif");
-		if(!file.exists()){
-			throw new RuntimeException("file error!!!!!");
-		}
-		Glide.with(this).asGif().load(file).into(gifView1);
+//		File file = new File("mnt/sdcard/test.gif");
+//		if(!file.exists()){
+//			throw new RuntimeException("file error!!!!!");
+//		}
+//		Glide.with(this).asGif().load(file).into(gifView1);
 	}
 }
