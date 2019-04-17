@@ -14,6 +14,7 @@ public class MenuData {
         this.showMenuActivityClass = showMenuActivityClass;
         mainMenuItems.add(createDrawableSubMenu());
         mainMenuItems.add(createWidgetSubMenu());
+        mainMenuItems.add(new MenuItemData("WifiDisplay",WifiDisplayActivity.class,new ArrayList<MenuItemData>()));
     }
 
     private MenuItemData createDrawableSubMenu(){
