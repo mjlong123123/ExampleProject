@@ -34,15 +34,8 @@ public class DrawablesActivity extends AppCompatActivity {
 
 	private void initGif() {
 		ImageView gifView = findViewById(R.id.gifView);
-		GifDrawable gifDrawable = new GifDrawable(this);
-		gifDrawable.start();
+		GifDrawable gifDrawable = GifDrawable.create(getAssets(),"test.gif");
+		gifDrawable.start(true);
 		gifView.setImageDrawable(gifDrawable);
-		ImageView gifView1 = findViewById(R.id.gifView1);
-
-//		File file = new File("mnt/sdcard/test.gif");
-//		if(!file.exists()){
-//			throw new RuntimeException("file error!!!!!");
-//		}
-//		Glide.with(this).asGif().load(file).into(gifView1);
 	}
 }

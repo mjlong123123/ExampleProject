@@ -1,6 +1,6 @@
 package com.dragon.graphics;
 
-import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Movie;
@@ -9,16 +9,14 @@ import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.io.InputStream;
 
 
 /**
- * @author chenjiulong
+ * @author dragon
  */
 public class GifDrawable extends Drawable implements Runnable {
-
 	private Movie movie;
 	private boolean loop = true;
 	private int duration = 0;
@@ -26,11 +24,18 @@ public class GifDrawable extends Drawable implements Runnable {
 	private boolean started = false;
 	private long startTime = 0;
 
-	public GifDrawable(Context context, boolean loop) {
-		this.loop = loop;
-		InputStream is = null;
+	public static GifDrawable create(AssetManager assetManager, String name){
+		GifDrawable gifDrawable = null;
+		try{
+			gifDrawable = new GifDrawable(assetManager.open(name));
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		return gifDrawable;
+	}
+
+	private GifDrawable(InputStream is) {
 		try {
-			is = context.getAssets().open("test.gif");
 			movie = Movie.decodeStream(is);
 			duration = movie.duration();
 		} catch (Exception e) {
@@ -46,10 +51,11 @@ public class GifDrawable extends Drawable implements Runnable {
 		}
 	}
 
-	public void start() {
+	public void start(boolean loop) {
 		if (started) {
 			return;
 		}
+		this.loop = loop;
 		started = true;
 		startTime = SystemClock.uptimeMillis();
 		scheduleSelf(this, startTime);
@@ -82,13 +88,11 @@ public class GifDrawable extends Drawable implements Runnable {
 		movie.draw(canvas, 0, 0);
 		if (started) {
 			scheduleSelf(this, currentTime + STEP_DURATION);
-//			invalidateSelf();
 		}
 	}
 
 	@Override
 	public void run() {
-		Log.d("dragon_track", "run ");
 		invalidateSelf();
 	}
 
@@ -104,12 +108,10 @@ public class GifDrawable extends Drawable implements Runnable {
 
 	@Override
 	public void setAlpha(int alpha) {
-
 	}
 
 	@Override
 	public void setColorFilter(@Nullable ColorFilter colorFilter) {
-
 	}
 
 	@Override
