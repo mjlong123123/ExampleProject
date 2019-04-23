@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">ExampleProject</string>
+    <array name="orientation">
+        <item>portal</item>
+        <item>reverse portal</item>
+        <item>landscape</item>
+        <item>reverse landscape</item>
+
+        <item>sensor</item>
+        <item>noSensor</item>
+        <item>fullSensor</item>
+        <item>sensor landscape</item>
+        <item>sensor portal</item>
+
+        <item>user</item>
+        <item>user portal</item>
+        <item>user landscape</item>
+        <item>user full</item>
+        <item>default</item>
+    </array>
 </resources>

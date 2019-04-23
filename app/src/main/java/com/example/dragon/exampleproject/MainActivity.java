@@ -1,9 +1,12 @@
 package com.example.dragon.exampleproject;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -20,15 +23,16 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ArrayList<MenuData.MenuItemData> menus = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
         Serializable serializable = getIntent().getSerializableExtra("menu_data");
-        if(serializable instanceof ArrayList){
-            menus = (ArrayList<MenuData.MenuItemData>)serializable;
-        }else{
+        if (serializable instanceof ArrayList) {
+            menus = (ArrayList<MenuData.MenuItemData>) serializable;
+        } else {
             menus = new MenuData(MainActivity.class).mainMenuItems;
         }
         recyclerView = findViewById(R.id.recyclerView);
@@ -37,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
             @NonNull
             @Override
             public CustomHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                return new CustomHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_layout,viewGroup,false));
+                return new CustomHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_layout, viewGroup, false));
             }
 
             @Override
@@ -47,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(MainActivity.this,itemData.aClass);
-                        if(itemData.subMenuItems != null) {
+                        Intent intent = new Intent(MainActivity.this, itemData.aClass);
+                        if (itemData.subMenuItems != null) {
                             intent.putExtra("menu_data", itemData.subMenuItems);
                         }
                         MainActivity.this.startActivity(intent);
@@ -64,20 +68,21 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             Paint paint = new Paint();
             int divide = 2;
+
             @Override
             public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 View child;
                 RecyclerView.LayoutParams layoutParams;
                 int count = parent.getChildCount();
-                int lastItemPosition = parent.getAdapter().getItemCount()-1;
+                int lastItemPosition = parent.getAdapter().getItemCount() - 1;
                 paint.setStrokeWidth(divide);
                 paint.setStyle(Paint.Style.STROKE);
-                for(int i = 0; i < count; i++){
+                for (int i = 0; i < count; i++) {
                     child = parent.getChildAt(i);
                     int bottom = child.getBottom();
-                    layoutParams = (RecyclerView.LayoutParams)child.getLayoutParams();
-                    if(layoutParams.getViewAdapterPosition() < lastItemPosition){
-                        c.drawLine(0,bottom + (divide/2.f),parent.getWidth(),bottom + (divide/2.0f),paint);
+                    layoutParams = (RecyclerView.LayoutParams) child.getLayoutParams();
+                    if (layoutParams.getViewAdapterPosition() < lastItemPosition) {
+                        c.drawLine(0, bottom + (divide / 2.f), parent.getWidth(), bottom + (divide / 2.0f), paint);
                     }
                 }
             }
@@ -89,17 +94,30 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                int lastItemPosition = parent.getAdapter().getItemCount()-1;
-                RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams)view.getLayoutParams();
-                if(layoutParams.getViewAdapterPosition() < lastItemPosition) {
+                int lastItemPosition = parent.getAdapter().getItemCount() - 1;
+                RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) view.getLayoutParams();
+                if (layoutParams.getViewAdapterPosition() < lastItemPosition) {
                     outRect.set(0, 0, 0, divide);
                 }
             }
         });
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1000);
+            } 
+        }
     }
 
-    public static class CustomHolder extends RecyclerView.ViewHolder{
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    public static class CustomHolder extends RecyclerView.ViewHolder {
         public TextView textView;
+
         public CustomHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.titleView);

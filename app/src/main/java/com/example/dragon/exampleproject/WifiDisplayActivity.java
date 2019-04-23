@@ -20,7 +20,7 @@ public class WifiDisplayActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
     SurfaceView surfaceView;
     DisplayManager displayManager;
-
+    Presentation presentation;
     @TargetApi(17)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +30,7 @@ public class WifiDisplayActivity extends AppCompatActivity {
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                initPlayer(holder);
+//                initPlayer(holder);
             }
 
             @Override
@@ -40,7 +40,7 @@ public class WifiDisplayActivity extends AppCompatActivity {
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                releasePlayer();
+//                releasePlayer();
             }
         });
         surfaceView.setOnClickListener(new View.OnClickListener() {
@@ -51,8 +51,15 @@ public class WifiDisplayActivity extends AppCompatActivity {
                 for (Display display : displays) {
                     Log.e("dragon", " display id " + display.getName());
                 }
-                Presentation presentation = new MyPresentation(WifiDisplayActivity.this, displays[0]);
-                presentation.show();
+                if(displays.length >= 2) {
+                    if(presentation == null) {
+                        presentation = new MyPresentation(WifiDisplayActivity.this, displays[1]);
+                        presentation.show();
+                    }else{
+                        presentation.dismiss();
+                        presentation = null;
+                    }
+                }
             }
         });
     }

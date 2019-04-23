@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dragon.exampleproject">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
@@ -21,14 +23,21 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".OrientationActivity"
+            android:theme="@style/Theme.AppCompat.Light"
+            android:screenOrientation="behind"/>
+        <activity
+            android:name=".Camera2WifiDisplayActivity"
+            android:theme="@style/Theme.AppCompat.Light" />
         <activity
             android:name=".drawable.DrawablesActivity"
             android:theme="@style/Theme.AppCompat.Light" />
         <activity
             android:name=".paper.PagerActivity"
             android:theme="@style/Theme.AppCompat.Light" />
-        <activity android:name=".WifiDisplayActivity"
-            android:theme="@style/Theme.AppCompat.Light"/>
+        <activity
+            android:name=".WifiDisplayActivity"
+            android:theme="@style/Theme.AppCompat.Light" />
     </application>
 
 </manifest>
