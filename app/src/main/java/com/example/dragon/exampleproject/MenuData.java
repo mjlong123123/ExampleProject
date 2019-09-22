@@ -17,6 +17,7 @@ public class MenuData {
         mainMenuItems.add(new MenuItemData("WifiDisplay",WifiDisplayActivity.class,new ArrayList<MenuItemData>()));
         mainMenuItems.add(new MenuItemData("Camera2WifiDisplay",Camera2WifiDisplayActivity.class,new ArrayList<MenuItemData>()));
         mainMenuItems.add(new MenuItemData("Orientation",OrientationActivity.class,new ArrayList<MenuItemData>()));
+        mainMenuItems.add(new MenuItemData("DataBinding",DataBindingActivity.class,new ArrayList<MenuItemData>()));
     }
 
     private MenuItemData createDrawableSubMenu(){
